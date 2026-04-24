@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
+  <meta name="theme-color" content="#0d9488" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="KeyControl" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>KeyControl — Gestão de Chaves</title>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+  <div id="appScreen">
+    <header>
+      <div class="header-brand">
+        <div class="logo-icon">🔑</div>
+        <div>
+          <h1>KeyControl</h1>
+          <span>Gestão de Chaves</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btnNovoAtivo" class="btn" style="display:none" title="Novo Ativo">➕</button>
+        <button id="btnNovoGrupo" class="btn" style="display:none" title="Novo Grupo">🏷️</button>
+        <button id="toggleTheme" class="btn" title="Tema">🌙</button>
+        <button id="btnAdmin" class="btn" title="Admin">🔐</button>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="stats-bar" id="statsBar"></div>
+      
+      <div class="toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input id="q" type="search" placeholder="Buscar chave..." />
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-outline" data-action="export-pdf">📄<span>PDF</span></button>
+          <button class="btn btn-outline" data-action="export-csv">📊<span>CSV</span></button>
+        </div>
+      </div>
+
+      <div id="groupsContainer"></div>
+
+      <footer>
+        KeyControl v2.0 • <span id="syncStatus">🟢 Online</span> • 
+        <a href="#" onclick="window.print(); return false;">Imprimir</a>
+      </footer>
+    </div>
+  </div>
+
+  <div id="modalRetirar" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <header>
+        <h3 id="retirarTitle">🔑 Retirar Chave</h3>
+        <button class="modal-close" data-action="fechar-modal" data-target="modalRetirar">&times;</button>
+      </header>
+      <div class="content">
+        <div id="retirarInfo" class="modal-info"></div>
+        <div class="grid">
+          <div class="full">
+            <label>Nome *</label>
+            <input id="retiraNome" type="text" required placeholder="Quem retira" />
+          </div>
+          <div>
+            <label>Empresa *</label>
+            <input id="retiraEmpresa" type="text" required placeholder="Empresa" />
+          </div>
+          <div>
+            <label>Data/Hora *</label>
+            <input id="retiraDataHora" type="datetime-local" required />
+          </div>
+          <div class="full">
+            <label>Local</label>
+            <input id="retiraLocal" type="text" placeholder="Local da chave" />
+          </div>
+          <div class="full">
+            <label>Foto (opcional)</label>
+            <input id="retiraFoto" type="file" accept="image/*" capture="environment" />
+            <div id="retiraPreview" class="preview">Toque para adicionar foto</div>
+          </div>
+          <div class="full">
+            <label>Histórico</label>
+            <textarea id="retiraObs" rows="2" readonly placeholder="Histórico..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline" data-action="fechar-modal" data-target="modalRetirar">Cancelar</button>
+        <button id="btnConfirmarRetirada" class="btn btn-danger" data-action="confirmar-retirada" disabled>Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalDevolver" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <header>
+        <h3 id="devolverTitle">✅ Devolver Chave</h3>
+        <button class="modal-close" data-action="fechar-modal" data-target="modalDevolver">&times;</button>
+      </header>
+      <div class="content">
+        <div id="devolverInfo" class="modal-info"></div>
+        <div class="grid">
+          <div class="full">
+            <label>Nome *</label>
+            <input id="devolveNome" type="text" required placeholder="Quem devolve" />
+          </div>
+          <div>
+            <label>Data/Hora *</label>
+            <input id="devolveDataHora" type="datetime-local" required />
+          </div>
+          <div class="full">
+            <label>Foto *</label>
+            <input id="devolveFoto" type="file" accept="image/*" capture="environment" required />
+            <div id="devolvePreview" class="preview">Toque para tirar foto</div>
+          </div>
+          <div class="full">
+            <label>Observações</label>
+            <textarea id="devolveObs" rows="2" placeholder="Estado da chave..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline" data-action="fechar-modal" data-target="modalDevolver">Cancelar</button>
+        <button id="btnConfirmarDevolucao" class="btn btn-success" data-action="confirmar-devolucao" disabled>Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalNovoAtivo" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <header>
+        <h3>➕ Novo Ativo</h3>
+        <button class="modal-close" data-action="fechar-modal" data-target="modalNovoAtivo">&times;</button>
+      </header>
+      <div class="content">
+        <div class="grid">
+          <div class="full">
+            <label>Código *</label>
+            <input id="novoCodigo" type="text" required placeholder="Código único" />
+          </div>
+          <div class="full">
+            <label>Nome *</label>
+            <input id="novoNome" type="text" required placeholder="Nome da chave" />
+          </div>
+          <div class="full">
+            <label>Local *</label>
+            <input id="novoLocal" type="text" required placeholder="Localiza��ão" />
+          </div>
+          <div class="full">
+            <label>Grupo *</label>
+            <select id="novoGrupo" required>
+              <option value="">Selecione</option>
+              <option value="carajas">🏔️ Carajás</option>
+              <option value="serra">⛰️ Serra Leste</option>
+              <option value="postes">📍 Postes</option>
+              <option value="skids">⚙️ Skids</option>
+              <option value="manganes">🔧 Manganês</option>
+              <option value="igarape">🌊 Igarapé Baía</option>
+            </select>
+          </div>
+          <div class="full">
+            <label>Observações</label>
+            <textarea id="novoObs" rows="2" placeholder="Notas..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline" data-action="fechar-modal" data-target="modalNovoAtivo">Cancelar</button>
+        <button id="btnSalvarAtivo" class="btn btn-primary" data-action="salvar-ativo">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalNovoGrupo" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <header>
+        <h3>🏷️ Novo Grupo</h3>
+        <button class="modal-close" data-action="fechar-modal" data-target="modalNovoGrupo">&times;</button>
+      </header>
+      <div class="content">
+        <div class="grid">
+          <div class="full">
+            <label>Nome *</label>
+            <input id="novoNomeGrupo" type="text" required placeholder="Nome do grupo" />
+          </div>
+          <div class="full">
+            <label>Ícone</label>
+            <input id="novoIconeGrupo" type="text" placeholder="Emoji" maxlength="2" />
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline" data-action="fechar-modal" data-target="modalNovoGrupo">Cancelar</button>
+        <button id="btnSalvarGrupo" class="btn btn-primary" data-action="salvar-grupo">Criar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminModal" class="modal-backdrop">
+    <div class="modal">
+      <header>
+        <h3>🔐 Admin</h3>
+        <button class="modal-close" data-action="fechar-admin">&times;</button>
+      </header>
+      <div class="content">
+        <div id="adminError" class="login-error"></div>
+        <div class="login-form">
+          <input type="password" id="adminPassword" class="login-input" placeholder="Senha de admin" />
+          <button id="btnAdminLogin" class="btn btn-primary" style="width:100%">Entrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "keycontrol",
+  "version": "2.0.0",
+  "description": "Gestão inteligente de retirada e devolução de chaves",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src/",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "firebase": "^10.7.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0"
+  }
+}
