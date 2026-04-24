@@ -40,7 +40,7 @@ service cloud.firestore {
 
 1. Abra o app
 2. Clique em 🔐 para modo admin
-3. Senha: `admin#2026!`
+3. Senha: ******
 4. Adicione ativos e grupos
 5. Retire/devolva chaves com foto
 
