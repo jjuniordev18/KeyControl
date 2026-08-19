@@ -74,10 +74,25 @@ export function tagLocal(local) {
   return `<span class="tag ${isInside ? 'in' : 'out'}">${isInside ? '🔒' : '🔓'} ${local}</span>`;
 }
 
-export function statusBadge(text) {
+function statusBadgeHTML(text) {
   if (!text) return '<span class="tag" style="background:var(--bg-elevated);color:var(--text-muted)">—</span>';
   const isRet = text === 'RETIRADA';
   return `<span class="tag ${isRet ? 'retirada' : 'ativo'}">${isRet ? '🔴 RETIRADA' : '🟢 Ativo'}</span>`;
+}
+
+export function statusBadge(text) {
+  const span = document.createElement('span');
+  span.classList.add('tag');
+  if (!text) {
+    span.style.background = 'var(--bg-elevated)';
+    span.style.color = 'var(--text-muted)';
+    span.textContent = '—';
+    return span;
+  }
+  const isRet = text === 'RETIRADA';
+  span.classList.add(isRet ? 'retirada' : 'ativo');
+  span.textContent = isRet ? '🔴 RETIRADA' : '🟢 Ativo';
+  return span;
 }
 
 export function actionButtons(cod) {
@@ -114,7 +129,7 @@ function row(item) {
     <td><strong class="mono">${nome}</strong></td>
     <td>${tagLocal(local)}</td>
     <td><div class="obs-view" data-cod="${item.cod}" title="${obsVal.replace(/"/g, '&quot;')}">${obsVal ? obsVal.substring(0, 50) + (obsVal.length > 50 ? '...' : '') : '—'}</div></td>
-    <td>${statusHtml}${statusBadge(s.status)}</td>
+    <td>${statusHtml}${statusBadgeHTML(s.status)}</td>
     <td>${actionButtons(item.cod)}</td>
   </tr>`;
 }
@@ -265,7 +280,7 @@ export function setupEventListeners() {
       updateKeyState(cod, { status: val });
       const td = e.target.parentElement;
       td.querySelectorAll('.tag').forEach(el => el.remove());
-      td.insertAdjacentHTML('beforeend', statusBadge(val));
+      td.appendChild(statusBadge(val));
     }
   });
 

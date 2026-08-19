@@ -5,6 +5,7 @@ import { saveState, getKeyState, updateKeyState, loadStateFromFirebase } from '.
 import { KEY_GROUPS, getAllKeys, findKeyByCod } from './js/data.js';
 import { exportarCSV, exportarPDF } from './js/export.js';
 import { nowLocalForInput, formatLocalFromInput, abrirModal, fecharModal, toggleTheme, loadTheme, previewFile, resizeImageToDataURL } from './js/utils.js';
+import { capturePhoto } from './js/camera.js';
 
 const ADMIN_PASSWORD = 'admin#2026!';
 let isAdmin = false;
@@ -370,6 +371,43 @@ if (devolveFotoInput) {
   devolveFotoInput.addEventListener('change', e => {
     previewFile(e.target, 'devolvePreview');
     validarDevolucao();
+  });
+}
+
+function setFileOnInput(input, file) {
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  input.files = dt.files;
+  input.dispatchEvent(new Event('change'));
+}
+
+const retiraFotoBtn = document.getElementById('retiraFotoBtn');
+if (retiraFotoBtn) {
+  retiraFotoBtn.addEventListener('click', async () => {
+    retiraFotoBtn.disabled = true;
+    retiraFotoBtn.textContent = '⏳ Abrindo...';
+    try {
+      const file = await capturePhoto();
+      if (file && retiraFotoInput) setFileOnInput(retiraFotoInput, file);
+    } finally {
+      retiraFotoBtn.disabled = false;
+      retiraFotoBtn.textContent = '📷 Tirar Foto';
+    }
+  });
+}
+
+const devolveFotoBtn = document.getElementById('devolveFotoBtn');
+if (devolveFotoBtn) {
+  devolveFotoBtn.addEventListener('click', async () => {
+    devolveFotoBtn.disabled = true;
+    devolveFotoBtn.textContent = '⏳ Abrindo...';
+    try {
+      const file = await capturePhoto();
+      if (file && devolveFotoInput) setFileOnInput(devolveFotoInput, file);
+    } finally {
+      devolveFotoBtn.disabled = false;
+      devolveFotoBtn.textContent = '📷 Tirar Foto';
+    }
   });
 }
 

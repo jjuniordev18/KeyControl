@@ -12,9 +12,10 @@
   <meta name="format-detection" content="telephone=no" />
   <title>KeyControl — Gestão de Chaves</title>
 
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+  <!-- TODO: Adicionar hash SRI nos atributos integrity abaixo -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js" integrity="sha384-TODO" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js" integrity="sha384-TODO" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js" integrity="sha384-TODO" crossorigin="anonymous"></script>
 
   <link rel="manifest" href="/manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -91,7 +92,8 @@
           </div>
           <div class="full">
             <label>Foto (opcional)</label>
-            <input id="retiraFoto" type="file" accept="image/*" capture="environment" />
+            <input id="retiraFoto" type="file" accept="image/*" style="display:none" />
+            <button type="button" id="retiraFotoBtn" class="btn btn-outline camera-btn">📷 Tirar Foto</button>
             <div id="retiraPreview" class="preview">Toque para adicionar foto</div>
           </div>
           <div class="full">
@@ -126,7 +128,8 @@
           </div>
           <div class="full">
             <label>Foto *</label>
-            <input id="devolveFoto" type="file" accept="image/*" capture="environment" required />
+            <input id="devolveFoto" type="file" accept="image/*" style="display:none" required />
+            <button type="button" id="devolveFotoBtn" class="btn btn-danger camera-btn">📷 Tirar Foto</button>
             <div id="devolvePreview" class="preview">Toque para tirar foto</div>
           </div>
           <div class="full">
@@ -225,6 +228,15 @@
           <button id="btnAdminLogin" class="btn btn-primary" style="width:100%">Entrar</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div id="cameraOverlay" class="camera-overlay">
+    <div id="cameraFlash" class="camera-flash"></div>
+    <video id="cameraVideo" class="camera-video" playsinline autoplay></video>
+    <div class="camera-controls">
+      <button id="cameraCloseBtn" class="camera-btn-close">&times;</button>
+      <button id="cameraCaptureBtn" class="camera-btn-capture"></button>
     </div>
   </div>
 
