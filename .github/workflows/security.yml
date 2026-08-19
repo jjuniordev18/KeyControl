@@ -1,0 +1,32 @@
+name: 🔒 Security Scan (Semgrep)
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  semgrep:
+    name: Semgrep Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep Scan
+        uses: returntocorp/semgrep-action@v1
+        with:
+          # Regras que serão executadas (Gratuitas e da Comunidade)
+          config: >-
+            p/owasp-top-ten
+            p/javascript
+            p/secrets
+            
+          # Faz o workflow FALHAR se encontrar vulnerabilidades bloqueantes
+          # Isso é o que "bloqueia" o código insegudo de entrar na main
+          fail-on: blocking
+          
+          # Opcional: Gera um relatório em formato SARIF para a aba "Security" do GitHub
+          publish: false
