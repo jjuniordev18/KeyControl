@@ -66,6 +66,66 @@ export async function loadStateFromFirebase() {
   return false;
 }
 
+let unsubscribeSnapshot = null;
+
+export function subscribeToFirebase() {
+  if (!isFirebaseEnabled()) return;
+
+  const db = getDb();
+  if (!db) return;
+
+  if (unsubscribeSnapshot) {
+    unsubscribeSnapshot();
+    unsubscribeSnapshot = null;
+  }
+
+  unsubscribeSnapshot = db.collection('keys').doc('shared-state')
+    .onSnapshot((doc) => {
+      if (!doc.exists) return;
+
+      const remoteData = doc.data();
+      const remoteState = remoteData.data;
+      if (!remoteState || typeof remoteState !== 'object') return;
+
+      const remoteTs = remoteData.updatedAt?.toMillis() || 0;
+      const localTs = state._lastSaved || 0;
+
+      if (remoteTs > localTs) {
+        const changedKeys = [];
+        for (const key in remoteState) {
+          if (key.startsWith('_')) continue;
+          const oldVal = JSON.stringify(state[key]);
+          const newVal = JSON.stringify(remoteState[key]);
+          if (oldVal !== newVal) changedKeys.push(key);
+        }
+
+        state = { ...remoteState, _lastSaved: remoteTs };
+        localStorage.setItem(STATE_KEY, JSON.stringify(state));
+
+        if (changedKeys.length > 0) {
+          console.log('📥 Sync recebido do Firebase:', changedKeys);
+          const syncEl = document.getElementById('syncStatus');
+          if (syncEl) {
+            syncEl.innerHTML = '📥 Atualizado por outro dispositivo';
+            setTimeout(() => { syncEl.innerHTML = '🟢 Online'; }, 3000);
+          }
+          window.dispatchEvent(new CustomEvent('firebase-sync', { detail: { changedKeys } }));
+        }
+      }
+    }, (error) => {
+      console.warn('Erro no listener Firebase:', error);
+      const syncEl = document.getElementById('syncStatus');
+      if (syncEl) syncEl.innerHTML = '⚠️ Sync com erro';
+    });
+}
+
+export function unsubscribeFirebase() {
+  if (unsubscribeSnapshot) {
+    unsubscribeSnapshot();
+    unsubscribeSnapshot = null;
+  }
+}
+
 export function getKeyState(cod) {
   return state[cod] || {};
 }

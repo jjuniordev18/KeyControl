@@ -1,7 +1,7 @@
 import './assets/styles.css';
 import { initFirebase, isFirebaseEnabled } from './js/firebase.js';
 import { setupEventListeners, renderGroups, filtrar, refreshRow, setCurrentKeyItem, checkMobileView, renderStats, getStats } from './js/ui.js';
-import { saveState, getKeyState, updateKeyState, loadStateFromFirebase } from './js/state.js';
+import { saveState, getKeyState, updateKeyState, loadStateFromFirebase, subscribeToFirebase } from './js/state.js';
 import { KEY_GROUPS, getAllKeys, findKeyByCod } from './js/data.js';
 import { exportarCSV, exportarPDF } from './js/export.js';
 import { nowLocalForInput, formatLocalFromInput, abrirModal, fecharModal, toggleTheme, loadTheme, previewFile, resizeImageToDataURL } from './js/utils.js';
@@ -30,7 +30,14 @@ if (isFirebaseEnabled()) {
       filtrar();
     }
   });
+  subscribeToFirebase();
 }
+
+window.addEventListener('firebase-sync', () => {
+  renderGroups();
+  renderStats();
+  filtrar();
+});
 
 renderGroups();
 
